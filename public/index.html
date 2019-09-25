@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Socket.IO chat</title>
+  <link rel="stylesheet" type="text/css" href="indexStyle.css">
+</head>
+<body>
+  <header>
+    <div id="header">
+      <div class="img-wrap">
+        <img
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjh7227UxTHw6OdfLSO48jcNkUaXXEUlcjNSzeCLiQO4W7W9Ok"
+          alt="Logo">
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="column">
+      <div id="footer">
+        <fieldset>
+          <legend>
+            <label>
+              <h2>Enter your text here : </h2>
+            </label>
+          </legend>
+          <form id="footer" action="">
+            <input id="boxMessage" autocomplete="off" disabled="true" /><button id="buttonMessage"
+              disabled="true">Send</button>
+          </form>
+        </fieldset>
+      </div>
+
+      <div id="aside">
+        <fieldset>
+          <legend>
+            <label>
+              <h2>Online People</h2>
+            </label>
+          </legend>
+          <input id="boxNick" type="text" placeholder="your nickname?" size="13" />
+          <button type="submit" id="buttonNick" onClick="setMyName()">Set</button>
+          <ul id="ulist"></ul>
+        </fieldset>
+      </div>
+    </section>
+
+    <div>
+      <section>
+        <fieldset>
+          <legend>
+            <label>
+              <h2>Conversation</h2>
+            </label>
+          </legend>
+          <ul id="messages"></ul>
+        </fieldset>
+      </section>
+  </main>
+
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+
+
+
+  <script>
+    var usersList = [];
+    var myNick = "";
+    imTyping = false;
+    var socket = io();
+    socket.on("connect", function (e) {
+      socket.emit("start");
+    });
+    socket.on('nickName', function (nick) {
+      myNickname = nickName;
+    });
+    $('form').submit(function () {
+      var temp = [myNickname, $("#boxMessage").val()];
+      socket.emit("send chat message", temp);
+      $("#boxMessage").val("");
+      imTyping = false;
+      socket.emit("not typing");
+      return false;
+    });
+    socket.on('chat message', function (msg) {
+      $("#messages").append("<li><b>" + msg[0] + ":</b> " + msg[1]);
+    });
+    socket.on('info', function (inf) {
+      $('#messages').append('<li><i>' + inf + '</i></li>');
+    });
+    socket.on('users list', function (usersList) {
+      updateUserList(usersList);
+    });
+    socket.on('typing signal', function (usersList) {
+      updateUserList(usersList);
+    });
+    function setMyName() {
+      myNickname = document.getElementById("boxNick").value;
+      socket.emit("set nick", myNickname);
+      document.getElementById("boxNick").disabled = true;
+      document.getElementById("buttonNick").hidden = true;
+      document.getElementById("boxMessage").disabled = false;
+      document.getElementById("buttonMessage").disabled = false;
+    }
+    function updateUserList(u) {
+      var list = document.getElementById("ulist");
+      list.innerHTML = "";
+      for (var i = 0; i < u.length; i++) {
+        var item = document.createElement("li");
+        item.innerHTML = u[i];
+        list.appendChild(item);
+      }
+    }
+    $('#boxMessage').on('input', function () {
+      if ($('#boxMessage').val().length != "" && imTyping == false) {
+        socket.emit("typing");
+        imTyping = true;
+      }
+      else if ($('#boxMessage').val() == "") {
+        socket.emit("not typing");
+        imTyping = false;
+      }
+    });
+  </script>
+
+
+</body>
+</html>

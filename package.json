@@ -20,10 +20,10 @@
     "url": "https://github.com/marviePN/heroku-node-sample-groupa/issues"
   },
   "homepage": "https://github.com/marviePN/heroku-node-sample-groupa#readme",
-  "engines": {
+  "engines": {  
     "node": "10.15"
   },
-  "dependencies": {
+  "dependencies": {     
     "express": "^4.17.1"
   }
 }
